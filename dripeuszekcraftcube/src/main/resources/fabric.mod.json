@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "dripeuszekcraftcube",
+  "version": "${version}",
+  "name": "dripeuszekcraftcube",
+  "description": "Szybkie zbieranie ziemniaków z /otchłań.",
+  "authors": ["dripeuszek"],
+  "environment": "client",
+  "entrypoints": {
+    "client": ["pl.dripeuszek.craftcube.CraftcubeMod"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.9",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
