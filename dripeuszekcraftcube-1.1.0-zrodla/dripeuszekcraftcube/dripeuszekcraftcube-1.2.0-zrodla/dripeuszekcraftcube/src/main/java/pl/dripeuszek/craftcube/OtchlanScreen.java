@@ -275,7 +275,7 @@ public class OtchlanScreen extends Screen {
                 cfg.dyeDelay + " tick", v -> cfg.dyeDelay = v);
         ry = sliderRow(c, mx, my, cx, ry, vw, "Przerwa po barwniku", cfg.afterDyeDelay, 0, 40,
                 cfg.afterDyeDelay + " tick", v -> cfg.afterDyeDelay = v);
-        ry = sliderRow(c, mx, my, cx, ry, vw, "Kliknięcia barwnika na otwarcie", cfg.maxDyeClicks, 1, 5,
+        ry = sliderRow(c, mx, my, cx, ry, vw, "Kliknięcia barwnika na otwarcie", cfg.maxDyeClicks, 1, 50,
                 String.valueOf(cfg.maxDyeClicks), v -> cfg.maxDyeClicks = v);
         ry = sliderRow(c, mx, my, cx, ry, vw, "Cooldown po komendzie", cfg.commandCooldown, 1, 60,
                 cfg.commandCooldown + " s", v -> cfg.commandCooldown = v);
