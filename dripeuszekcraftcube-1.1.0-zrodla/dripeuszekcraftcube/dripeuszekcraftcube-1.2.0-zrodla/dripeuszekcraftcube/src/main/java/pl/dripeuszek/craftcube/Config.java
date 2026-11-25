@@ -80,7 +80,7 @@ public class Config {
         periodSeconds = Math.max(1, Math.min(60, periodSeconds));
         dyeDelay = Math.max(0, Math.min(40, dyeDelay));
         afterDyeDelay = Math.max(0, Math.min(40, afterDyeDelay));
-        maxDyeClicks = Math.max(1, Math.min(5, maxDyeClicks));
+        maxDyeClicks = Math.max(1, Math.min(999, maxDyeClicks));
         commandCooldown = Math.max(1, Math.min(60, commandCooldown));
         cache = null;
     }
