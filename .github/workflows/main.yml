@@ -13,9 +13,8 @@ jobs:
         with:
           gradle-version: 8.12
       - run: gradle build
-        working-directory: dripeuszekcraftcube-1.1.0-zrodla/dripeuszekcraftcube
+        working-directory: dripeuszekcraftcube-1.1.0-zrodla/dripeuszekcraftcube/dripeuszekcraftcube-1.2.0-zrodla/dripeuszekcraftcube
       - uses: actions/upload-artifact@v4
         with:
           name: dripeuszekcraftcube
-          path: dripeuszekcraftcube-1.1.0-zrodla/dripeuszekcraftcube/build/libs/*.jar
-          
+          path: dripeuszekcraftcube-1.1.0-zrodla/dripeuszekcraftcube/dripeuszekcraftcube-1.2.0-zrodla/dripeuszekcraftcube/build/libs/*.jar
