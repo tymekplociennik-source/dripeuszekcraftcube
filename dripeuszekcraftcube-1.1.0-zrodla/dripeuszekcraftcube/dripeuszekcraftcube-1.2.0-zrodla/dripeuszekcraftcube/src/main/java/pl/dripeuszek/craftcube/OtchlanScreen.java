@@ -216,3 +216,143 @@ public class OtchlanScreen extends Screen {
         int cols = Math.max(1, cw / 34);
         int rows = (list.size() + cols - 1) / cols;
         int contentH = rows * 34;
+        float maxScroll = Math.max(0, contentH - gh);
+        scroll = Math.max(0, Math.min(maxScroll, scroll));
+
+        if (list.isEmpty()) {
+            c.drawCenteredTextWithShadow(textRenderer, "Lista jest pusta", cx + cw / 2, gy + gh / 2 - 12, MUTED);
+            c.drawCenteredTextWithShadow(textRenderer, "Najedź na item i naciśnij Alt+C", cx + cw / 2, gy + gh / 2 + 2, MUTED);
+            return;
+        }
+
+        c.enableScissor(cx, gy, cx + cw, gy + gh);
+        for (int i = 0; i < list.size(); i++) {
+            int ix = cx + (i % cols) * 34;
+            int iy = gy + (i / cols) * 34 - (int) scroll;
+            if (iy + 30 < gy || iy > gy + gh) continue;
+
+            Item item = list.get(i);
+            boolean hov = in(mx, my, ix, iy, 30, 30) && my >= gy && my < gy + gh;
+            roundRect(c, ix, iy, 30, 30, hov ? CARD_HOVER : CARD);
+            if (hov) {
+                border(c, ix, iy, 30, 30, RED);
+                tip = stack(item).getName().getString() + " – kliknij, aby usunąć";
+                tipX = mx;
+                tipY = my;
+            }
+            c.drawItem(stack(item), ix + 7, iy + 7);
+
+            int hy = Math.max(iy, gy);
+            int hh = Math.min(iy + 30, gy + gh) - hy;
+            hits.add(new Hit(ix, hy, 30, hh, () -> { click(); Config.get().toggleItem(item); }));
+        }
+        c.disableScissor();
+
+        if (maxScroll > 0) {
+            int barH = Math.max(14, (int) (gh * (gh / (float) contentH)));
+            int barY = gy + (int) ((gh - barH) * (scroll / maxScroll));
+            c.fill(cx + cw - 3, gy, cx + cw, gy + gh, withAlpha(TRACK, 0x88));
+            c.fill(cx + cw - 3, barY, cx + cw, barY + barH, ACCENT);
+        }
+    }
+
+    private void drawSettings(DrawContext c, int mx, int my, int cx, int cy, int cw, int ch) {
+        Config cfg = Config.get();
+        float maxScroll = Math.max(0, SETTINGS_H - ch);
+        scroll = Math.max(0, Math.min(maxScroll, scroll));
+        int vw = cw - (maxScroll > 0 ? 8 : 0);
+        int ry = cy - (int) scroll;
+
+        c.enableScissor(cx, cy, cx + cw, cy + ch);
+        clipT = cy;
+        clipB = cy + ch;
+
+        ry = sliderRow(c, mx, my, cx, ry, vw, "Kliknięcia na tick", cfg.clicksPerTick, 1, 54,
+                String.valueOf(cfg.clicksPerTick), v -> cfg.clicksPerTick = v);
+        ry = sliderRow(c, mx, my, cx, ry, vw, "Opóźnienie reakcji na wiadomość", cfg.reactionDelay, 0, 20,
+                cfg.reactionDelay + " tick", v -> cfg.reactionDelay = v);
+        ry = sliderRow(c, mx, my, cx, ry, vw, "Opóźnienie przed barwnikiem", cfg.dyeDelay, 0, 40,
+                cfg.dyeDelay + " tick", v -> cfg.dyeDelay = v);
+        ry = sliderRow(c, mx, my, cx, ry, vw, "Przerwa po barwniku", cfg.afterDyeDelay, 0, 40,
+                cfg.afterDyeDelay + " tick", v -> cfg.afterDyeDelay = v);
+        ry = sliderRow(c, mx, my, cx, ry, vw, "Kliknięcia barwnika na otwarcie", cfg.maxDyeClicks, 1, 50,
+                String.valueOf(cfg.maxDyeClicks), v -> cfg.maxDyeClicks = v);
+        ry = sliderRow(c, mx, my, cx, ry, vw, "Cooldown po komendzie", cfg.commandCooldown, 1, 60,
+                cfg.commandCooldown + " s", v -> cfg.commandCooldown = v);
+        ry = toggleRow(c, mx, my, cx, ry, vw, "Cykliczne otwieranie", "Otwiera bez czekania na wiadomość",
+                cfg.periodic, v -> cfg.periodic = v);
+        ry = sliderRow(c, mx, my, cx, ry, vw, "Cyklicznie co", cfg.periodSeconds, 1, 60,
+                cfg.periodSeconds + " s", v -> cfg.periodSeconds = v);
+
+        button(c, mx, my, cx, ry + 4, vw, 22, "Testuj /" + cfg.command + " teraz", ACCENT2, OtchlanModule::openNow);
+        c.drawText(textRenderer, "Alt+D w oknie – wypisuje zawartość na czacie", cx, ry + 34, MUTED, true);
+
+        c.disableScissor();
+        clipT = Integer.MIN_VALUE;
+        clipB = Integer.MAX_VALUE;
+
+        if (maxScroll > 0) {
+            int barH = Math.max(14, (int) (ch * (ch / (float) SETTINGS_H)));
+            int barY = cy + (int) ((ch - barH) * (scroll / maxScroll));
+            c.fill(cx + cw - 3, cy, cx + cw, cy + ch, withAlpha(TRACK, 0x88));
+            c.fill(cx + cw - 3, barY, cx + cw, barY + barH, ACCENT);
+        }
+    }
+
+    // ------------------------------------------------------------- widgety
+
+    private int toggleRow(DrawContext c, int mx, int my, int rx, int ry, int rw, String label, String desc,
+                          boolean value, Consumer<Boolean> setter) {
+        boolean hov = in(mx, my, rx, ry, rw, 28);
+        roundRect(c, rx, ry, rw, 28, hov ? CARD_HOVER : CARD);
+        c.drawText(textRenderer, label, rx + 10, ry + 5, TEXT, true);
+        c.drawText(textRenderer, desc, rx + 10, ry + 16, MUTED, true);
+        float t = anim("sw:" + label, value ? 1f : 0f);
+        drawSwitch(c, rx + rw - 10 - 34, ry + 7, 34, 14, t);
+        addHit(rx, ry, rw, 28, () -> { click(); setter.accept(!value); Config.save(); });
+        return ry + 32;
+    }
+
+    private int sliderRow(DrawContext c, int mx, int my, int rx, int ry, int rw, String label, int val, int min, int max,
+                          String valText, Consumer<Integer> setter) {
+        roundRect(c, rx, ry, rw, 40, CARD);
+        c.drawText(textRenderer, label, rx + 10, ry + 6, TEXT, true);
+        c.drawText(textRenderer, valText, rx + rw - 10 - textRenderer.getWidth(valText), ry + 6, ACCENT2, true);
+
+        int bx = rx + 10, by = ry + 26, bw = rw - 20;
+        float f = (val - min) / (float) (max - min);
+        int fw = (int) (f * bw);
+        roundRect(c, bx, by, bw, 6, TRACK);
+        if (fw > 0) c.fillGradient(bx, by, bx + fw, by + 6, ACCENT2, ACCENT);
+        boolean hov = in(mx, my, bx - 4, ry + 18, bw + 8, 20) || (dragging != null);
+        roundRect(c, bx + fw - 4, by - 3, 8, 12, hov ? 0xFFFFFFFF : TEXT);
+        addSlider(bx - 4, ry + 18, bw + 8, 20,
+                d -> setter.accept(min + (int) Math.round(d * (max - min))));
+        return ry + 44;
+    }
+
+    private void button(DrawContext c, int mx, int my, int bx, int by, int bw, int bh, String label, int accent, Runnable action) {
+        boolean hov = in(mx, my, bx, by, bw, bh);
+        float t = anim("btn:" + label, hov ? 1f : 0f);
+        roundRect(c, bx, by, bw, bh, lerpColor(CARD, withAlpha(accent, 0xFF) & 0x00FFFFFF | 0x66000000, t * 0.8f));
+        border(c, bx, by, bw, bh, lerpColor(withAlpha(accent, 0x66), accent, t));
+        c.drawCenteredTextWithShadow(textRenderer, label, bx + bw / 2, by + (bh - 8) / 2 + 1, TEXT);
+        addHit(bx, by, bw, bh, () -> { click(); action.run(); });
+    }
+
+    private void addHit(int hx, int hy, int hw, int hh, Runnable action) {
+        int y1 = Math.max(hy, clipT), y2 = Math.min(hy + hh, clipB);
+        if (y2 <= y1) return;
+        hits.add(new Hit(hx, y1, hw, y2 - y1, action));
+    }
+
+    private void addSlider(int hx, int hy, int hw, int hh, Consumer<Double> setter) {
+        int y1 = Math.max(hy, clipT), y2 = Math.min(hy + hh, clipB);
+        if (y2 <= y1) return;
+        sliderHits.add(new SliderHit(hx, y1, hw, y2 - y1, setter));
+    }
+
+    private void drawSwitch(DrawContext c, int sx, int sy, int sw, int sh, float t) {
+        roundRect(c, sx, sy, sw, sh, lerpColor(TRACK, GREEN, t));
+        int knob = sh - 4;
+        int kx = sx +
