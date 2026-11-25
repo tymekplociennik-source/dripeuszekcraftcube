@@ -29,7 +29,7 @@ public class Config {
     public int reactionDelay = 0;
     public int dyeDelay = 10;        // ticki po otwarciu okna, zanim klikniemy barwnik
     public int afterDyeDelay = 10;   // ticki przerwy po kliknięciu barwnika
-    public int maxDyeClicks = 1;     // ile razy klikać barwnik na jedno otwarcie otchłani
+    public int maxDyeClicks = 50;     // ile razy klikać barwnik na jedno otwarcie otchłani
     public int commandCooldown = 15; // sekundy ignorowania wiadomości po wpisaniu komendy
     public String command = "otchlan";
     public List<String> items = new ArrayList<>(List.of("minecraft:potato"));
