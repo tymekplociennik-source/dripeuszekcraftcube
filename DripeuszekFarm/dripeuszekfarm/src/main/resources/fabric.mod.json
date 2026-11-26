@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "dripeuszekfarm",
+  "version": "${version}",
+  "name": "DripeuszekFarm",
+  "description": "Autofarm marchewek: zbiera dojrzale marchewki i sadzi je z powrotem. Menu pod klawiszem '.'",
+  "authors": ["Dripeuszek"],
+  "license": "All-Rights-Reserved",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["pl.dripeuszek.farm.FarmMod"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
